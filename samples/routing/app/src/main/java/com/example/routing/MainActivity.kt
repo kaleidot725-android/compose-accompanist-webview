@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -50,12 +50,8 @@ class MainActivity : ComponentActivity() {
             when (screenState) {
                 ScreenState.Home -> {
                     HomeScreen(
-                        shouldOverrideUrlLoading = { url ->
-                            if (url == Urls.mail) {
-                                screenState = ScreenState.Mail
-                                return@HomeScreen true
-                            }
-                            return@HomeScreen false
+                        onNavigateMail = {
+                            screenState = ScreenState.Mail
                         }
                     )
                 }
@@ -73,42 +69,49 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-private fun HomeScreen(shouldOverrideUrlLoading: (String) -> Boolean) {
+private fun HomeScreen(onNavigateMail: () -> Unit) {
     val webViewState = rememberWebViewState(url = MainActivity.Urls.home)
     val client = object : AccompanistWebViewClient() {
         override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-            return shouldOverrideUrlLoading(request?.url.toString())
+            if (request?.url.toString() == MainActivity.Urls.mail) {
+                onNavigateMail()
+                return true
+            }
+            return false
         }
     }
-
     WebView(state = webViewState, client = client)
 }
 
 @Composable
 private fun MailScreen(onBack: () -> Unit) {
-    BackHandler(true) {
-        onBack()
-    }
+    Box {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(10) { count ->
+                Card {
+                    Box(
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .fillMaxWidth()
+                            .height(50.dp)
+                    ) {
+                        Text(
+                            text = "SAMPLE MAIL $count",
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                }
+            }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(100) { count ->
-            Card {
-                Box(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .fillMaxWidth()
-                        .height(50.dp)
-                ) {
-                    Text(
-                        text = "SAMPLE MAIL $count",
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
+            item {
+                Button(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
+                    Text(text = "BACK")
                 }
             }
         }
