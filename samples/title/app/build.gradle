@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.routing'
+    namespace 'com.example.title'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.example.routing"
+        applicationId "com.example.title"
         minSdk 24
         targetSdk 33
         versionCode 1
